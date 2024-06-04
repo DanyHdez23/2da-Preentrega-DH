@@ -1,0 +1,19 @@
+html,body{
+    height: 100%;
+    margin: 0;
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgb(20, 77, 199) 0%, rgb(19, 189, 223) 96%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    
+
+}
+
+
+h2 {
+    color: white;
+}
+
+h3 {
+    color: white;
+}
+
