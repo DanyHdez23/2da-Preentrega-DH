@@ -13,16 +13,15 @@ tareaInput.addEventListener('change', datosTarea)
 formulario.addEventListener('submit', submitTarea)
 
 let editando = false
+let tareaEditadaIndex = -1
 
 // Objeto de Tarea
 const tareaObj = {
-    id: generarId(),
     fecha: '',
     tarea: ''
 }
 
 class Notificacion {
-
     constructor({texto, tipo}) {
         this.texto = texto
         this.tipo = tipo
@@ -30,24 +29,13 @@ class Notificacion {
     }
 
     mostrar() {
-        
         const alerta = document.createElement('div')
-        alerta.classList.add('text-center', 'w-100', 'p-3',  'my-3', 'alert', 'font-weight-bold')
-
-        
+        alerta.classList.add('text-center', 'w-100', 'p-3', 'my-3', 'alert', 'font-weight-bold')
         const alertaPrevia = document.querySelector('.alert')
         alertaPrevia?.remove()
-
-        
         this.tipo === 'error' ? alerta.classList.add('alert-danger') : alerta.classList.add('alert-success')
-
-        
         alerta.textContent = this.texto
-
-        
         formulario.parentElement.insertBefore(alerta, formulario)
-
-        
         setTimeout(() => {
             alerta.remove()
         }, 3000);
@@ -56,38 +44,41 @@ class Notificacion {
 
 class AdminTareas {
     constructor() {
-        this.tareas = []
+        this.tareas = JSON.parse(localStorage.getItem('tareas')) || []
+        this.mostrar()
     }
 
     agregar(tarea) {
-        this.tareas = [...this.tareas, tarea]
+        this.tareas.push(tarea)
+        this.sincronizarStorage()
         this.mostrar()
     }
 
-    editar(tareaActualizada) {
-        this.tareas = this.tareas.map(tarea => tarea.id === tareaActualizada.id ? tareaActualizada : tarea)
+    editar(tarea, index) {
+        this.tareas[index] = tarea
+        this.sincronizarStorage()
         this.mostrar()
     }
 
-    eliminar(id) {
-        this.tareas = this.tareas.filter(tarea => tarea.id !== id)
+    eliminar(index) {
+        this.tareas.splice(index, 1)
+        this.sincronizarStorage()
         this.mostrar()
+    }
+
+    sincronizarStorage() {
+        localStorage.setItem('tareas', JSON.stringify(this.tareas))
     }
 
     mostrar() {
-        
         while (contenedorTareas.firstChild) {
             contenedorTareas.removeChild(contenedorTareas.firstChild)
         }
-
-        
         if (this.tareas.length === 0) {
             contenedorTareas.innerHTML = '<p class="text-center">No Hay Tareas</p>'
             return
         }
-
-        
-        this.tareas.forEach(tarea => {
+        this.tareas.forEach((tarea, index) => {
             const divTarea = document.createElement('div')
             divTarea.classList.add('card', 'mb-3')
 
@@ -102,18 +93,16 @@ class AdminTareas {
             descripcion.classList.add('card-text')
             descripcion.innerHTML = `<strong>Tarea:</strong> ${tarea.tarea}`
 
-            
             const btnEditar = document.createElement('button')
             btnEditar.classList.add('btn', 'btn-primary', 'mr-2', 'btn-editar')
             btnEditar.innerHTML = 'Editar'
-            btnEditar.onclick = () => cargarEdicion(tarea)
+            btnEditar.onclick = () => cargarEdicion(tarea, index)
 
             const btnEliminar = document.createElement('button')
             btnEliminar.classList.add('btn', 'btn-danger')
             btnEliminar.innerHTML = 'Eliminar'
-            btnEliminar.onclick = () => this.eliminar(tarea.id)
+            btnEliminar.onclick = () => this.eliminar(index)
 
-            
             cardBody.appendChild(fecha)
             cardBody.appendChild(descripcion)
             cardBody.appendChild(btnEditar)
@@ -132,7 +121,6 @@ const tareas = new AdminTareas()
 
 function submitTarea(e) {
     e.preventDefault()
-
     if (Object.values(tareaObj).some(valor => valor.trim() === '')) {
         new Notificacion({
             texto: 'Rellena todos los campos',
@@ -140,9 +128,8 @@ function submitTarea(e) {
         })
         return
     }
-
     if (editando) {
-        tareas.editar({...tareaObj})
+        tareas.editar({...tareaObj}, tareaEditadaIndex)
         new Notificacion({
             texto: 'Guardado Correctamente',
             tipo: 'success'
@@ -154,7 +141,6 @@ function submitTarea(e) {
             tipo: 'success'
         })
     }
-
     formulario.reset()
     reiniciarObjetoTarea()
     formularioInput.textContent = 'Agregar Tarea'
@@ -163,23 +149,16 @@ function submitTarea(e) {
 
 function reiniciarObjetoTarea() {
     Object.assign(tareaObj, {
-        id: generarId(),
         fecha: '',
         tarea: ''
     })
 }
 
-function generarId() {
-    return Math.random().toString(36).substring(2) + Date.now()
-}
-
-function cargarEdicion(tarea) {
+function cargarEdicion(tarea, index) {
     Object.assign(tareaObj, tarea)
-
     fechaInput.value = tarea.fecha
     tareaInput.value = tarea.tarea
-
     editando = true
-
+    tareaEditadaIndex = index
     formularioInput.textContent = 'Guardar Cambios'
 }
