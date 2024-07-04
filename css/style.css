@@ -17,3 +17,15 @@ h3 {
     color: white;
 }
 
+#frase-motivacional {
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+    font-size: 18px;
+    font-style: italic;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.406);
+    padding: 10px;
+    text-align: center;
+    z-index: 1000;
+}
